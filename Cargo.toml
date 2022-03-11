@@ -1,0 +1,9 @@
+[package]
+name = "cube-solver-rust"
+version = "0.1.0"
+authors = ["Michael <michael.claybaugh@gmail.com>"]
+edition = "2022"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
