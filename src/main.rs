@@ -129,6 +129,11 @@ impl PocketCube {
     fn is_solved(cube: PocketCube) -> bool {
         return false;
     }
+
+    // Will brute force every move and return true if one solves it.
+    fn can_solve_in(n: u8) -> bool {
+        return false;
+    }
 }
 
 fn main() {
