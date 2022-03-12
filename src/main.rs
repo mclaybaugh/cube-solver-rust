@@ -101,19 +101,13 @@ impl PocketCube {
                 // Update orientation
                 match face.axis {
                     0 => {
-                        let temp = piece.orientation[0];
-                        piece.orientation[0] = piece.orientation[1];
-                        piece.orientation[1] = temp;
+                        piece.orientation = swap_3(&mut piece.orientation, 0, 1);
                     }
                     1 => {
-                        let temp = piece.orientation[0];
-                        piece.orientation[0] = piece.orientation[2];
-                        piece.orientation[2] = temp;
+                        piece.orientation = swap_3(&mut piece.orientation, 0, 2);
                     }
                     _ => {
-                        let temp = piece.orientation[1];
-                        piece.orientation[1] = piece.orientation[2];
-                        piece.orientation[2] = temp;
+                        piece.orientation = swap_3(&mut piece.orientation, 1, 2);
                     }
                 }
             }
@@ -134,6 +128,13 @@ impl PocketCube {
     fn can_solve_in(n: u8) -> bool {
         return false;
     }
+}
+
+fn swap_3(orientation: &mut [u8; 3], i: usize, j: usize) -> [u8; 3] {
+    let temp = orientation[i];
+    orientation[i] = orientation[j];
+    orientation[j] = temp;
+    return *orientation;
 }
 
 fn main() {
