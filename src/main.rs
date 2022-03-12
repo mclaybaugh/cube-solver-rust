@@ -120,6 +120,15 @@ impl PocketCube {
         }
         return new_cube;
     }
+
+    // Will perform n random rotations on cube and return.
+    fn scramble(cube: PocketCube, n: u8) -> PocketCube {
+        return cube.clone();
+    }
+
+    fn is_solved(cube: PocketCube) -> bool {
+        return false;
+    }
 }
 
 fn main() {
