@@ -7,28 +7,32 @@ const O: u8 = 3;
 const B: u8 = 4;
 const G: u8 = 5;
 
-// First three ints are (x, y, z) coordinates of the pieces. So the corner at
-// (0, 0, 0) is touching the origin point, and (0, 0, 1) is the piece right
-// above that.
-// Second three ints have the visible face colors of the corner in order
-// by the side on the x/y plane, the x/z plane, and the y/z plane.
-#[derive(Debug)]
-struct Corner(u8, u8, u8, u8, u8, u8);
 
 #[derive(Debug)]
-struct PocketCube([Corner; 8]);
+struct Piece {
+    // (x, y, z) coordinates of the pieces. So the corner at (0, 0, 0) is
+    // touching the origin point, and (0, 0, 1) is the piece above.
+    position: (u8, u8, u8),
+
+    // The visible face colors of the corner in order
+    // by the side on the x/y plane, the x/z plane, and the y/z plane.
+    orientation: (u8, u8, u8)
+}
+
+#[derive(Debug)]
+struct PocketCube([Piece; 8]);
 
 impl PocketCube {
     fn get_solved_cube() -> PocketCube {
         return PocketCube([
-            Corner(0, 0, 0, W, G, O),
-            Corner(0, 0, 1, Y, G, O),
-            Corner(0, 1, 0, W, B, O),
-            Corner(0, 1, 1, Y, B, O),
-            Corner(1, 0, 0, W, G, R),
-            Corner(1, 0, 1, Y, G, R),
-            Corner(1, 1, 0, W, B, R),
-            Corner(1, 1, 1, Y, B, R)
+            Piece { position: (0, 0, 0), orientation: (W, G, O) },
+            Piece { position: (0, 0, 1), orientation: (Y, G, O) },
+            Piece { position: (0, 1, 0), orientation: (W, B, O) },
+            Piece { position: (0, 1, 1), orientation: (Y, B, O) },
+            Piece { position: (1, 0, 0), orientation: (W, G, R) },
+            Piece { position: (1, 0, 1), orientation: (Y, G, R) },
+            Piece { position: (1, 1, 0), orientation: (W, B, R) },
+            Piece { position: (1, 1, 1), orientation: (Y, B, R) }
         ]);
     }
 }
