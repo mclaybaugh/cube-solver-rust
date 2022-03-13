@@ -1,5 +1,11 @@
 use rand::Rng;
 
+fn main() {
+    let solved_cube = PocketCube::get_solved_cube();
+    let scrambled = PocketCube::scramble(solved_cube, 20);
+    println!("{:?}", scrambled);
+}
+
 // Using color initials for code to make it more readable, but storing
 // colors as ints in tuples
 const W: u8 = 0;
@@ -22,6 +28,7 @@ struct Piece {
 
 // To select the bottom face, axis would be Z (position tuple index of 2) and
 // value would be 0
+#[derive(Debug, Clone, Copy)]
 struct Face {
     axis: usize,
     value: u8,
@@ -99,9 +106,11 @@ impl PocketCube {
 
     // Will perform n random rotations on cube and return.
     fn scramble(mut cube: PocketCube, n: u8) -> PocketCube {
+        println!("I'm doing it!");
         for _ in 0..n {
             let x: u8 = rand::thread_rng().gen_range(0..6);
             let face = get_face(x);
+            println!("{:?}", face);
             cube = PocketCube::rotate(cube, face);
         }
         return cube;
@@ -184,9 +193,4 @@ fn swap_3(mut orientation: [u8; 3], i: usize, j: usize) -> [u8; 3] {
     orientation[i] = orientation[j];
     orientation[j] = temp;
     return orientation;
-}
-
-fn main() {
-    let solved_cube = PocketCube::get_solved_cube();
-    println!("{:?}", solved_cube);
 }
