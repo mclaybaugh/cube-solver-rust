@@ -106,7 +106,6 @@ impl PocketCube {
 
     // Will perform n random rotations on cube and return.
     fn scramble(mut cube: PocketCube, n: u8) -> PocketCube {
-        println!("I'm doing it!");
         for _ in 0..n {
             let x: u8 = rand::thread_rng().gen_range(0..6);
             let face = get_face(x);
@@ -116,7 +115,14 @@ impl PocketCube {
         return cube;
     }
 
-    fn is_solved(cube: PocketCube) -> bool {
+    // from piece at pieces[0], we know all face colors because the three
+    // on the piece and all the opposites are given
+    fn is_solved(cube: &PocketCube) -> bool {
+        // get all face colors from piece
+        let faceColors: [(Face, u8); 6] = face_colors_by_piece(&cube.pieces[0]);
+        // for each remaining piece, ensure each side matches face
+        // on first failure, return false
+        // else return true
         return false;
     }
 
@@ -124,6 +130,10 @@ impl PocketCube {
     fn can_solve_in(n: u8) -> bool {
         return false;
     }
+}
+
+fn face_colors_by_piece(piece: &Piece) -> [(Face, u8); 6] {
+    // TODO finish this
 }
 
 fn rotate_position(pos: [u8; 3], face: &Face) -> [u8; 3] {
