@@ -2,7 +2,7 @@ use rand::Rng;
 
 fn main() {
     let solved_cube = PocketCube::get_solved_cube();
-    let scrambled = PocketCube::scramble(solved_cube, 20);
+    let scrambled = scramble(solved_cube, 20);
     println!("{:?}", scrambled);
 }
 
@@ -97,93 +97,90 @@ impl PocketCube {
         let mut new_cube = cube.clone();
         for piece in new_cube.pieces.iter_mut() {
             if piece.position[face.axis] == face.value {
-                piece.position = rotate_position(piece.position, &face);
-                piece.orientation = rotate_orientation(piece.orientation, face.axis);
+                piece.position = PocketCube::rotate_position(piece.position, &face);
+                piece.orientation = PocketCube::rotate_orientation(piece.orientation, face.axis);
             }
         }
         return new_cube;
     }
 
-    // Will perform n random rotations on cube and return.
-    fn scramble(mut cube: PocketCube, n: u8) -> PocketCube {
-        for _ in 0..n {
-            let x: u8 = rand::thread_rng().gen_range(0..6);
-            let face = get_face(x);
-            println!("{:?}", face);
-            cube = PocketCube::rotate(cube, face);
+    fn rotate_position(pos: [u8; 3], face: &Face) -> [u8; 3] {
+        let indexes: (usize, usize) = PocketCube::get_other_indexes(face.axis);
+        let current_vals = (pos[indexes.0], pos[indexes.1]);
+        let new_vals: (u8, u8);
+        if (face.axis == 0 && face.value == 0)
+            || (face.axis == 1 && face.value == 1)
+            || (face.axis == 2 && face.value == 0)
+        {
+            new_vals = match current_vals {
+                (1, 1) => (1, 0),
+                (1, 0) => (0, 0),
+                (0, 0) => (0, 1),
+                (0, 1) => (1, 1),
+                _ => (1, 1),
+            };
+        } else {
+            new_vals = match current_vals {
+                (1, 1) => (0, 1),
+                (0, 1) => (0, 0),
+                (0, 0) => (1, 0),
+                (1, 0) => (1, 1),
+                _ => (1, 1),
+            };
         }
-        return cube;
+        let mut new_pos = [0, 0, 0];
+        new_pos[indexes.0] = new_vals.0;
+        new_pos[indexes.1] = new_vals.1;
+        new_pos[face.axis] = pos[face.axis];
+        return pos;
     }
 
-    // from piece at pieces[0], we know all face colors because the three
-    // on the piece and all the opposites are given
-    fn is_solved(cube: &PocketCube) -> bool {
-        // get all face colors from piece
-        let faceColors: [(Face, u8); 6] = face_colors_by_piece(&cube.pieces[0]);
-        // for each remaining piece, ensure each side matches face
-        // on first failure, return false
-        // else return true
-        return false;
+    fn rotate_orientation(orientation: [u8; 3], axis: usize) -> [u8; 3] {
+        match axis {
+            0 => swap_3(orientation, 0, 1),
+            1 => swap_3(orientation, 0, 2),
+            _ => swap_3(orientation, 1, 2),
+        }
     }
 
-    // Will brute force every move and return true if one solves it.
-    fn can_solve_in(n: u8) -> bool {
-        return false;
+    fn get_other_indexes(i: usize) -> (usize, usize) {
+        match i {
+            0 => (1, 2),
+            1 => (0, 2),
+            _ => (1, 2),
+        }
     }
+}
+
+// Will perform n random rotations on cube and return.
+fn scramble(mut cube: PocketCube, n: u8) -> PocketCube {
+    for _ in 0..n {
+        let x: u8 = rand::thread_rng().gen_range(0..6);
+        let face = get_face(x);
+        println!("{:?}", face);
+        cube = PocketCube::rotate(cube, face);
+    }
+    return cube;
+}
+
+// from piece at pieces[0], we know all face colors because the three
+// on the piece and all the opposites are given
+fn is_solved(cube: &PocketCube) -> bool {
+    // get all face colors from piece
+    let faceColors: [(Face, u8); 6] = face_colors_by_piece(&cube.pieces[0]);
+    // for each remaining piece, ensure each side matches face
+    // on first failure, return false
+    // else return true
+    return false;
+}
+
+// Will brute force every move and return true if one solves it.
+fn can_solve_in(n: u8) -> bool {
+    return false;
 }
 
 fn face_colors_by_piece(piece: &Piece) -> [(Face, u8); 6] {
     // TODO finish this
-}
-
-fn rotate_position(pos: [u8; 3], face: &Face) -> [u8; 3] {
-    let indexes: (usize, usize) = get_other_indexes(face.axis);
-    let v1 = pos[indexes.0];
-    let v2 = pos[indexes.1];
-    let new_vals: (u8, u8);
-    if (face.axis == 0 && face.value == 0)
-        || (face.axis == 1 && face.value == 1)
-        || (face.axis == 2 && face.value == 0)
-    {
-        // 11 -> 10
-        new_vals = match (v1, v2) {
-            (1, 1) => (1, 0),
-            (1, 0) => (0, 0),
-            (0, 0) => (0, 1),
-            (0, 1) => (1, 1),
-            _ => (1, 1),
-        };
-    } else {
-        // 11 -> 01
-        new_vals = match (v1, v2) {
-            (1, 1) => (0, 1),
-            (0, 1) => (0, 0),
-            (0, 0) => (1, 0),
-            (1, 0) => (1, 1),
-            _ => (1, 1),
-        };
-    }
-    let mut new_pos = [0, 0, 0];
-    new_pos[indexes.0] = new_vals.0;
-    new_pos[indexes.1] = new_vals.1;
-    new_pos[face.axis] = pos[face.axis];
-    return pos;
-}
-
-fn rotate_orientation(orientation: [u8; 3], axis: usize) -> [u8; 3] {
-    match axis {
-        0 => swap_3(orientation, 0, 1),
-        1 => swap_3(orientation, 0, 2),
-        _ => swap_3(orientation, 1, 2),
-    }
-}
-
-fn get_other_indexes(i: usize) -> (usize, usize) {
-    match i {
-        0 => (1, 2),
-        1 => (0, 2),
-        _ => (1, 2),
-    }
 }
 
 fn get_face(x: u8) -> Face {
