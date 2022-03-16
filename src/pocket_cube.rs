@@ -42,13 +42,6 @@ pub fn get_face(x: u8) -> Face {
     }
 }
 
-pub fn swap_3(mut xs: [u8; 3], i: usize, j: usize) -> [u8; 3] {
-    let temp = xs[i];
-    xs[i] = xs[j];
-    xs[j] = temp;
-    return xs;
-}
-
 // pub fn face_colors_by_piece(piece: &Corner) -> [(Face, u8); 6] {
 //     // TODO finish this
 // }
@@ -126,7 +119,8 @@ impl PocketCube {
         for piece in new_cube.pieces.iter_mut() {
             if piece.position[face.axis] == face.value {
                 piece.position = PocketCube::rotate_position(piece.position, &face);
-                piece.orientation = PocketCube::rotate_orientation(piece.orientation, face.axis);
+                piece.orientation =
+                    PocketCube::rotate_orientation(&mut piece.orientation, face.axis);
             }
         }
         return new_cube;
@@ -163,12 +157,15 @@ impl PocketCube {
         return pos;
     }
 
-    fn rotate_orientation(orientation: [u8; 3], axis: usize) -> [u8; 3] {
+    fn rotate_orientation(orientation: &mut [u8], axis: usize) -> [u8; 3] {
         match axis {
-            0 => swap_3(orientation, 0, 1),
-            1 => swap_3(orientation, 0, 2),
-            _ => swap_3(orientation, 1, 2),
-        }
+            0 => orientation.swap(0, 1),
+            1 => orientation.swap(0, 2),
+            _ => orientation.swap(1, 2),
+        };
+        return orientation
+            .try_into()
+            .expect("orientation failed to convert to array");
     }
 
     // from piece at pieces[0], we know all face colors because the three
