@@ -7,4 +7,3 @@ fn main() {
     let scrambled = c::PocketCube::scramble(solved_cube, 20);
     println!("{:?}", scrambled);
 }
-
