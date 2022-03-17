@@ -1,15 +1,26 @@
 use rand::Rng;
 
 // initial Cube stuff
+#[derive(Debug, Copy, Clone, PartialEq)]
+enum Color {
+    White,
+    Yellow,
+    Red,
+    Orange,
+    Blue,
+    Green,
+}
 
-// Using color initials for code to make it more readable, but storing
-// colors as ints in tuples
-pub const W: u8 = 0;
-pub const Y: u8 = 1;
-pub const R: u8 = 2;
-pub const O: u8 = 3;
-pub const B: u8 = 4;
-pub const G: u8 = 5;
+fn opposite_col(c: Color) -> Color {
+    match c {
+        Color::White => Color::Yellow,
+        Color::Yellow => Color::White,
+        Color::Red => Color::Orange,
+        Color::Orange => Color::Red,
+        Color::Blue => Color::Green,
+        Color::Green => Color::Blue,
+    }
+}
 
 #[derive(Debug, Copy, Clone)]
 pub struct Corner {
@@ -19,7 +30,7 @@ pub struct Corner {
 
     // The visible face colors of the corner in order
     // by the side on the x/y plane, the x/z plane, and the y/z plane.
-    orientation: [u8; 3],
+    orientation: [Color; 3],
 }
 
 // To select the bottom face, axis would be Z (position tuple index of 2) and
@@ -42,10 +53,75 @@ pub fn get_face(x: u8) -> Face {
     }
 }
 
-// pub fn face_colors_by_piece(piece: &Corner) -> [(Face, u8); 6] {
-//     // TODO finish this
-// }
+fn face_colors_by_corner(corner: &Corner) -> [(Face, Color); 6] {
+    [
+        (
+            Face {
+                axis: 0,
+                value: corner.position[0],
+            },
+            corner.orientation[0],
+        ),
+        (
+            Face {
+                axis: 1,
+                value: corner.position[1],
+            },
+            corner.orientation[1],
+        ),
+        (
+            Face {
+                axis: 2,
+                value: corner.position[2],
+            },
+            corner.orientation[2],
+        ),
+        (
+            Face {
+                axis: 0,
+                value: opposite_pos(corner.position[0]),
+            },
+            opposite_col(corner.orientation[0]),
+        ),
+        (
+            Face {
+                axis: 1,
+                value: opposite_pos(corner.position[1]),
+            },
+            opposite_col(corner.orientation[1]),
+        ),
+        (
+            Face {
+                axis: 2,
+                value: opposite_pos(corner.position[2]),
+            },
+            opposite_col(corner.orientation[2]),
+        ),
+    ]
+}
 
+fn face_color_in_list(face_color: (Face, Color), list: [(Face, Color); 6]) -> bool {
+    let (face, col) = face_color;
+    for x in list {
+        let (lface, lcol) = x;
+        // if face matches then ensure color matches
+        if face.axis == lface.axis && face.value == lface.value {
+            if col != lcol {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+fn opposite_pos(x: u8) -> u8 {
+    match x {
+        0 => 1,
+        _ => 0,
+    }
+}
+
+// Indexes of arrays of size 3 are always 0,1,2
 fn get_other_indexes(i: usize) -> (usize, usize) {
     match i {
         0 => (1, 2),
@@ -57,7 +133,7 @@ fn get_other_indexes(i: usize) -> (usize, usize) {
 // Pocket cube stuff here
 #[derive(Debug, Clone, Copy)]
 pub struct PocketCube {
-    pieces: [Corner; 8],
+    corners: [Corner; 8],
 }
 
 impl PocketCube {
@@ -65,38 +141,38 @@ impl PocketCube {
     // on the left.
     pub fn get_solved_cube() -> PocketCube {
         return PocketCube {
-            pieces: [
+            corners: [
                 Corner {
                     position: [0, 0, 0],
-                    orientation: [W, G, O],
+                    orientation: [Color::White, Color::Green, Color::Orange],
                 },
                 Corner {
                     position: [0, 0, 1],
-                    orientation: [Y, G, O],
+                    orientation: [Color::Yellow, Color::Green, Color::Orange],
                 },
                 Corner {
                     position: [0, 1, 0],
-                    orientation: [W, B, O],
+                    orientation: [Color::White, Color::Blue, Color::Orange],
                 },
                 Corner {
                     position: [0, 1, 1],
-                    orientation: [Y, B, O],
+                    orientation: [Color::Yellow, Color::Blue, Color::Orange],
                 },
                 Corner {
                     position: [1, 0, 0],
-                    orientation: [W, G, R],
+                    orientation: [Color::White, Color::Green, Color::Red],
                 },
                 Corner {
                     position: [1, 0, 1],
-                    orientation: [Y, G, R],
+                    orientation: [Color::Yellow, Color::Green, Color::Red],
                 },
                 Corner {
                     position: [1, 1, 0],
-                    orientation: [W, B, R],
+                    orientation: [Color::White, Color::Blue, Color::Red],
                 },
                 Corner {
                     position: [1, 1, 1],
-                    orientation: [Y, B, R],
+                    orientation: [Color::Yellow, Color::Blue, Color::Red],
                 },
             ],
         };
@@ -116,7 +192,7 @@ impl PocketCube {
     // 1/2 flip
     pub fn rotate(cube: PocketCube, face: Face) -> PocketCube {
         let mut new_cube = cube.clone();
-        for piece in new_cube.pieces.iter_mut() {
+        for piece in new_cube.corners.iter_mut() {
             if piece.position[face.axis] == face.value {
                 piece.position = PocketCube::rotate_position(piece.position, &face);
                 piece.orientation =
@@ -157,7 +233,8 @@ impl PocketCube {
         return pos;
     }
 
-    fn rotate_orientation(orientation: &mut [u8], axis: usize) -> [u8; 3] {
+    // Indexes of arrays of size 3 are always 0,1,2
+    fn rotate_orientation(orientation: &mut [Color], axis: usize) -> [Color; 3] {
         match axis {
             0 => orientation.swap(0, 1),
             1 => orientation.swap(0, 2),
@@ -171,15 +248,43 @@ impl PocketCube {
     // from piece at pieces[0], we know all face colors because the three
     // on the piece and all the opposites are given
     pub fn is_solved(cube: &PocketCube) -> bool {
-        // get all face colors from piece
-        // let faceColors: [(Face, u8); 6] = face_colors_by_piece(&cube.pieces[0]);
+        let list = face_colors_by_corner(&cube.corners[0]);
         // for each remaining piece, ensure each side matches face
-        // on first failure, return false
-        // else return true
-        return false;
+        for i in 1..6 {
+            // get color/face pair, then check if in face_colors
+            let corner_face_colors = [
+                (
+                    Face {
+                        axis: 0,
+                        value: cube.corners[i].position[0],
+                    },
+                    cube.corners[i].orientation[0],
+                ),
+                (
+                    Face {
+                        axis: 1,
+                        value: cube.corners[i].position[1],
+                    },
+                    cube.corners[i].orientation[1],
+                ),
+                (
+                    Face {
+                        axis: 2,
+                        value: cube.corners[i].position[2],
+                    },
+                    cube.corners[i].orientation[2],
+                ),
+            ];
+            for face_color in corner_face_colors {
+                if !face_color_in_list(face_color, list) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
-    // Will perform n random rotations on cube and return.
+    // Perform n random rotations on cube and return.
     pub fn scramble(mut cube: PocketCube, n: u8) -> PocketCube {
         for _ in 0..n {
             let x: u8 = rand::thread_rng().gen_range(0..6);
@@ -190,7 +295,7 @@ impl PocketCube {
         return cube;
     }
 
-    // Will brute force every move and return true if one solves it.
+    // Brute force every move and return true if one solves it.
     pub fn can_solve_in(n: u8) -> bool {
         return false;
     }
