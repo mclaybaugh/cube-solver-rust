@@ -58,9 +58,16 @@ fn face_colors_by_corner(corner: &Corner) -> [(Face, Color); 6] {
         (
             Face {
                 axis: 0,
-                value: corner.position[0],
+                value: corner.position[2],
             },
             corner.orientation[0],
+        ),
+        (
+            Face {
+                axis: 0,
+                value: opposite_pos(corner.position[2]),
+            },
+            opposite_col(corner.orientation[0]),
         ),
         (
             Face {
@@ -68,20 +75,6 @@ fn face_colors_by_corner(corner: &Corner) -> [(Face, Color); 6] {
                 value: corner.position[1],
             },
             corner.orientation[1],
-        ),
-        (
-            Face {
-                axis: 2,
-                value: corner.position[2],
-            },
-            corner.orientation[2],
-        ),
-        (
-            Face {
-                axis: 0,
-                value: opposite_pos(corner.position[0]),
-            },
-            opposite_col(corner.orientation[0]),
         ),
         (
             Face {
@@ -93,7 +86,14 @@ fn face_colors_by_corner(corner: &Corner) -> [(Face, Color); 6] {
         (
             Face {
                 axis: 2,
-                value: opposite_pos(corner.position[2]),
+                value: corner.position[0],
+            },
+            corner.orientation[2],
+        ),
+        (
+            Face {
+                axis: 2,
+                value: opposite_pos(corner.position[0]),
             },
             opposite_col(corner.orientation[2]),
         ),
@@ -256,7 +256,7 @@ impl PocketCube {
                 (
                     Face {
                         axis: 0,
-                        value: cube.corners[i].position[0],
+                        value: cube.corners[i].position[2],
                     },
                     cube.corners[i].orientation[0],
                 ),
@@ -270,7 +270,7 @@ impl PocketCube {
                 (
                     Face {
                         axis: 2,
-                        value: cube.corners[i].position[2],
+                        value: cube.corners[i].position[0],
                     },
                     cube.corners[i].orientation[2],
                 ),
