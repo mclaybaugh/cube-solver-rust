@@ -11,7 +11,7 @@ enum Color {
     Green,
 }
 
-fn opposite_col(c: Color) -> Color {
+fn opposite_color(c: Color) -> Color {
     match c {
         Color::White => Color::Yellow,
         Color::Yellow => Color::White,
@@ -22,6 +22,7 @@ fn opposite_col(c: Color) -> Color {
     }
 }
 
+// TODO Also keep a history of rotations done on a cube
 #[derive(Debug, Copy, Clone)]
 pub struct Corner {
     // (x, y, z) coordinates of the pieces. So the corner at (0, 0, 0) is
@@ -41,7 +42,8 @@ pub struct Face {
     value: u8,
 }
 
-pub fn get_face(x: u8) -> Face {
+fn random_face() -> Face {
+    let x: u8 = rand::thread_rng().gen_range(0..6);
     match x {
         0 => Face { axis: 0, value: 0 },
         1 => Face { axis: 0, value: 1 },
@@ -68,7 +70,7 @@ fn face_colors_by_corner(corner: &Corner) -> [(Face, Color); 6] {
                 axis: 0,
                 value: opposite_pos(corner.position[2]),
             },
-            opposite_col(corner.orientation[0]),
+            opposite_color(corner.orientation[0]),
         ),
         (
             Face {
@@ -82,7 +84,7 @@ fn face_colors_by_corner(corner: &Corner) -> [(Face, Color); 6] {
                 axis: 1,
                 value: opposite_pos(corner.position[1]),
             },
-            opposite_col(corner.orientation[1]),
+            opposite_color(corner.orientation[1]),
         ),
         (
             Face {
@@ -96,7 +98,7 @@ fn face_colors_by_corner(corner: &Corner) -> [(Face, Color); 6] {
                 axis: 2,
                 value: opposite_pos(corner.position[0]),
             },
-            opposite_col(corner.orientation[2]),
+            opposite_color(corner.orientation[2]),
         ),
     ]
 }
@@ -286,10 +288,10 @@ impl PocketCube {
     }
 
     // Perform n random rotations on cube and return.
+    // TODO make this work on any type with trait of "puzzle_cube"
     pub fn scramble(mut cube: PocketCube, n: u8) -> PocketCube {
         for _ in 0..n {
-            let x: u8 = rand::thread_rng().gen_range(0..6);
-            let face = get_face(x);
+            let face = random_face();
             println!("{:?}", face);
             cube = PocketCube::rotate(cube, face);
         }
@@ -297,6 +299,7 @@ impl PocketCube {
     }
 
     // Brute force every move and return true if one solves it.
+    // iterative deepening depth-first traversal
     pub fn can_solve_in(n: u8) -> bool {
         return false;
     }
