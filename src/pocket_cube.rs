@@ -53,6 +53,7 @@ pub fn get_face(x: u8) -> Face {
     }
 }
 
+// for the x/y face (0 axis), the determinant value is z (pos index 2)
 fn face_colors_by_corner(corner: &Corner) -> [(Face, Color); 6] {
     [
         (
@@ -230,7 +231,7 @@ impl PocketCube {
         new_pos[indexes.0] = new_vals.0;
         new_pos[indexes.1] = new_vals.1;
         new_pos[face.axis] = pos[face.axis];
-        return pos;
+        return new_pos;
     }
 
     // Indexes of arrays of size 3 are always 0,1,2
