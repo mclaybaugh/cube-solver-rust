@@ -293,18 +293,20 @@ impl PocketCube {
 
     // Perform n random rotations on cube and return.
     // TODO make this work on any type with trait of "puzzle_cube"
-    pub fn scramble(mut cube: PocketCube, n: u8) -> PocketCube {
+    pub fn scramble(mut cube: PocketCube, n: u8) -> (PocketCube, Vec<Face>) {
+        let mut rotations: Vec<Face> = Vec::new();
         for _ in 0..n {
             let face = random_face();
-            println!("{:?}", face);
+            rotations.push(face);
             cube = PocketCube::rotate(cube, face);
         }
-        return cube;
+        return (cube, rotations);
     }
 
     // Brute force every move and return true if one solves it.
     // iterative deepening depth-first traversal
-    pub fn maybe_solve_in(cube: PocketCube, n: u8) -> Option<PocketCube> {
+    // needs to return breadcrumb tail on success, or false/None
+    pub fn maybe_solve_in(cube: PocketCube, n: u8) -> Option<Vec<Face>> {
         for x in 0..n {
             // TODO rework this to use function on option to avoid match with
             // nothing for "none"
@@ -317,7 +319,7 @@ impl PocketCube {
         return None;
     }
 
-    fn depth_limited_search(cube: PocketCube, n: u8) -> Option<PocketCube> {
+    fn depth_limited_search(cube: PocketCube, n: u8) -> Option<Vec<Face>> {
         if n == 0 {
             println!("depth 0, lets check it");
             if PocketCube::is_solved(&cube) {
