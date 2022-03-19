@@ -300,9 +300,9 @@ impl PocketCube {
 
     // Brute force every move and return true if one solves it.
     // iterative deepening depth-first traversal
-    pub fn maybe_solve_in(n: u8) -> Option<PocketCube> {
+    pub fn maybe_solve_in(cube: PocketCube, n: u8) -> Option<PocketCube> {
         for x in 0..n {
-            match PocketCube::depth_limited_search(x) {
+            match PocketCube::depth_limited_search(cube, x) {
                 Some(cube) => return Some(cube),
                 None => continue,
             }
@@ -310,7 +310,13 @@ impl PocketCube {
         return None;
     }
 
-    fn depth_limited_search(n: u8) -> Option<PocketCube> {
+    fn depth_limited_search(cube: PocketCube, n: u8) -> Option<PocketCube> {
+        if (n == 0) {
+            // if solved, return that
+            // else false, continue to siblings
+        }
+
+        // else foreach rotation, check if solved
         return Some(PocketCube::get_solved_cube());
     }
 }
