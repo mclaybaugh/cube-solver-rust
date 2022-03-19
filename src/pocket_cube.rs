@@ -42,8 +42,7 @@ pub struct Face {
     value: u8,
 }
 
-fn random_face() -> Face {
-    let x: u8 = rand::thread_rng().gen_range(0..6);
+fn get_face(x: u8) -> Face {
     match x {
         0 => Face { axis: 0, value: 0 },
         1 => Face { axis: 0, value: 1 },
@@ -53,6 +52,11 @@ fn random_face() -> Face {
         5 => Face { axis: 2, value: 1 },
         _ => Face { axis: 0, value: 0 },
     }
+}
+
+fn random_face() -> Face {
+    let x: u8 = rand::thread_rng().gen_range(0..6);
+    get_face(x)
 }
 
 // for the x/y face (0 axis), the determinant value is z (pos index 2)
@@ -302,6 +306,9 @@ impl PocketCube {
     // iterative deepening depth-first traversal
     pub fn maybe_solve_in(cube: PocketCube, n: u8) -> Option<PocketCube> {
         for x in 0..n {
+            // TODO rework this to use function on option to avoid match with
+            // nothing for "none"
+            println!("trying for depth: {}", x);
             match PocketCube::depth_limited_search(cube, x) {
                 Some(cube) => return Some(cube),
                 None => continue,
@@ -311,12 +318,25 @@ impl PocketCube {
     }
 
     fn depth_limited_search(cube: PocketCube, n: u8) -> Option<PocketCube> {
-        if (n == 0) {
-            // if solved, return that
-            // else false, continue to siblings
+        if n == 0 {
+            println!("depth 0, lets check it");
+            if PocketCube::is_solved(&cube) {
+                return Some(cube);
+            } else {
+                return None;
+            }
         }
 
         // else foreach rotation, check if solved
-        return Some(PocketCube::get_solved_cube());
+        for i in 0..6 {
+            println!("trying rotation: {}", i);
+            let ncube = PocketCube::rotate(cube, get_face(i));
+            let result = PocketCube::depth_limited_search(ncube, n - 1);
+            match result {
+                Some(solved_cube) => return Some(solved_cube),
+                None => continue,
+            }
+        }
+        return None;
     }
 }
