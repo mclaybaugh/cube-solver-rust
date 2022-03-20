@@ -50,7 +50,9 @@ fn get_face(x: u8) -> Face {
         3 => Face { axis: 1, value: 1 },
         4 => Face { axis: 2, value: 0 },
         5 => Face { axis: 2, value: 1 },
-        _ => Face { axis: 0, value: 0 },
+        _ => {
+            panic!("Invalid face index: {:?}", x);
+        }
     }
 }
 
