@@ -311,21 +311,22 @@ impl PocketCube {
             // TODO rework this to use function on option to avoid match with
             // nothing for "none"
             println!("trying for depth: {}", x);
-            match PocketCube::depth_limited_search(cube, x) {
-                Some(cube) => return Some(cube),
-                None => continue,
+            let moves: Vec<Face> = Vec::new();
+            let (moves, is_solved) = PocketCube::depth_limited_search(cube, moves, x);
+            if is_solved {
+                return Some(moves);
             }
         }
         return None;
     }
 
-    fn depth_limited_search(cube: PocketCube, n: u8) -> Option<Vec<Face>> {
+    fn depth_limited_search(cube: PocketCube, moves: Vec<Face>, n: u8) -> (Vec<Face>, bool) {
         if n == 0 {
             println!("depth 0, lets check it");
             if PocketCube::is_solved(&cube) {
-                return Some(cube);
+                return (moves, true);
             } else {
-                return None;
+                return (moves, false);
             }
         }
 
