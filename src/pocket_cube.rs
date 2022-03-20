@@ -59,6 +59,10 @@ fn random_face() -> Face {
     get_face(x)
 }
 
+fn rand_face_index() -> u8 {
+    rand::thread_rng().gen_range(0..6)
+}
+
 // for the x/y face (0 axis), the determinant value is z (pos index 2)
 fn face_colors_by_corner(corner: &Corner) -> [(Face, Color); 6] {
     [
@@ -197,7 +201,8 @@ impl PocketCube {
     // face 2,0, 110 > 100 > 000 > 010 > 110 (11,10,00,01) (from bottom)
     // face 2,1, 111 > 011 > 001 > 101 > 111 (11,01,00,10) (from top)
     // 1/2 flip
-    pub fn rotate(cube: PocketCube, face: Face) -> PocketCube {
+    pub fn rotate(cube: PocketCube, face_index: u8) -> PocketCube {
+        let face = get_face(face_index);
         let mut new_cube = cube.clone();
         for piece in new_cube.corners.iter_mut() {
             if piece.position[face.axis] == face.value {
@@ -293,12 +298,12 @@ impl PocketCube {
 
     // Perform n random rotations on cube and return.
     // TODO make this work on any type with trait of "puzzle_cube"
-    pub fn scramble(mut cube: PocketCube, n: u8) -> (PocketCube, Vec<Face>) {
-        let mut rotations: Vec<Face> = Vec::new();
+    pub fn scramble(mut cube: PocketCube, n: u8) -> (PocketCube, Vec<u8>) {
+        let mut rotations: Vec<u8> = Vec::new();
         for _ in 0..n {
-            let face = random_face();
-            rotations.push(face);
-            cube = PocketCube::rotate(cube, face);
+            let face_index = rand_face_index();
+            rotations.push(face_index);
+            cube = PocketCube::rotate(cube, face_index);
         }
         return (cube, rotations);
     }
@@ -306,40 +311,55 @@ impl PocketCube {
     // Brute force every move and return true if one solves it.
     // iterative deepening depth-first traversal
     // needs to return breadcrumb tail on success, or false/None
-    pub fn maybe_solve_in(cube: PocketCube, n: u8) -> Option<Vec<Face>> {
-        for x in 0..n {
-            // TODO rework this to use function on option to avoid match with
-            // nothing for "none"
+    pub fn maybe_solve_in(cube: PocketCube, n: u8) -> Option<Vec<u8>> {
+        let mut x = 0;
+        loop {
             println!("trying for depth: {}", x);
-            let moves: Vec<Face> = Vec::new();
-            let (moves, is_solved) = PocketCube::depth_limited_search(cube, moves, x);
+            let moves: Vec<u8> = Vec::new();
+            let (returned_moves, is_solved) = PocketCube::depth_limited_search(cube, &moves, x);
             if is_solved {
-                return Some(moves);
+                return Some(returned_moves.clone());
+            }
+            if x == n {
+                break;
+            } else {
+                x = x + 1;
             }
         }
         return None;
     }
 
-    fn depth_limited_search(cube: PocketCube, moves: Vec<Face>, n: u8) -> (Vec<Face>, bool) {
+    fn depth_limited_search(cube: PocketCube, moves: &Vec<u8>, n: u8) -> (Vec<u8>, bool) {
+        // end of line, check if solved
         if n == 0 {
             println!("depth 0, lets check it");
             if PocketCube::is_solved(&cube) {
-                return (moves, true);
+                return (moves.clone(), true);
             } else {
-                return (moves, false);
+                return (moves.clone(), false);
             }
         }
 
-        // else foreach rotation, check if solved
+        // do check on children (rotations)
         for i in 0..6 {
+            // don't do same move 4 times in a row
+            let move_len = moves.len();
+            if move_len >= 3 {
+                if moves[move_len - 1] == i && moves[move_len - 2] == i && moves[move_len - 3] == i
+                {
+                    continue;
+                }
+            }
+
+            let mut new_moves = moves.clone();
+            new_moves.push(i);
             println!("trying rotation: {}", i);
-            let ncube = PocketCube::rotate(cube, get_face(i));
-            let result = PocketCube::depth_limited_search(ncube, n - 1);
-            match result {
-                Some(solved_cube) => return Some(solved_cube),
-                None => continue,
+            let ncube = PocketCube::rotate(cube, i);
+            let (new_moves, solved) = PocketCube::depth_limited_search(ncube, &new_moves, n - 1);
+            if solved {
+                return (new_moves.clone(), solved);
             }
         }
-        return None;
+        return (moves.clone(), false);
     }
 }

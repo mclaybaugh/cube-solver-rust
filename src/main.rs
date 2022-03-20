@@ -7,9 +7,8 @@ fn main() {
     let (scrambled, moves) = c::PocketCube::scramble(solved_cube, 1);
     println!("moves: {:?}", moves);
 
-    println!("brute force it");
-    println!("trying 0");
-    let result = c::PocketCube::maybe_solve_in(solved_cube, 0);
+    println!("brute forcing it now, trying 1");
+    let result = c::PocketCube::maybe_solve_in(scrambled, 1);
     println!("{:?}", result);
     // println!("trying 1");
     // let result = c::PocketCube::maybe_solve_in(scrambled, 1);
