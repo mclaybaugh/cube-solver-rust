@@ -313,19 +313,16 @@ impl PocketCube {
     // needs to return breadcrumb tail on success, or false/None
     pub fn maybe_solve_in(cube: PocketCube, n: u8) -> (Option<Vec<u8>>, u64) {
         let mut depth = 0;
-        let nodes_checked = 0;
-        loop {
+        let mut nodes_checked = 0;
+        while depth <= n {
             let moves: Vec<u8> = Vec::new();
-            let (returned_moves, is_solved, nodes_checked) =
+            let (returned_moves, is_solved, nodes_checked_r) =
                 PocketCube::depth_limited_search(cube, &moves, depth, nodes_checked);
+            nodes_checked = nodes_checked_r;
             if is_solved {
                 return (Some(returned_moves.clone()), nodes_checked);
             }
-            if depth == n {
-                break;
-            } else {
-                depth = depth + 1;
-            }
+            depth = depth + 1;
         }
         return (None, nodes_checked);
     }
