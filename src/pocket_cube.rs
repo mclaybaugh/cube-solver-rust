@@ -311,32 +311,37 @@ impl PocketCube {
     // Brute force every move and return true if one solves it.
     // iterative deepening depth-first traversal
     // needs to return breadcrumb tail on success, or false/None
-    pub fn maybe_solve_in(cube: PocketCube, n: u8) -> Option<Vec<u8>> {
-        let mut x = 0;
+    pub fn maybe_solve_in(cube: PocketCube, n: u8) -> (Option<Vec<u8>>, u64) {
+        let mut depth = 0;
+        let nodes_checked = 0;
         loop {
-            println!("trying for depth: {}", x);
             let moves: Vec<u8> = Vec::new();
-            let (returned_moves, is_solved) = PocketCube::depth_limited_search(cube, &moves, x);
+            let (returned_moves, is_solved, nodes_checked) =
+                PocketCube::depth_limited_search(cube, &moves, depth, nodes_checked);
             if is_solved {
-                return Some(returned_moves.clone());
+                return (Some(returned_moves.clone()), nodes_checked);
             }
-            if x == n {
+            if depth == n {
                 break;
             } else {
-                x = x + 1;
+                depth = depth + 1;
             }
         }
-        return None;
+        return (None, nodes_checked);
     }
 
-    fn depth_limited_search(cube: PocketCube, moves: &Vec<u8>, n: u8) -> (Vec<u8>, bool) {
+    fn depth_limited_search(
+        cube: PocketCube,
+        moves: &Vec<u8>,
+        n: u8,
+        mut nodes_checked: u64,
+    ) -> (Vec<u8>, bool, u64) {
         // end of line, check if solved
         if n == 0 {
-            println!("depth 0, lets check it");
             if PocketCube::is_solved(&cube) {
-                return (moves.clone(), true);
+                return (moves.clone(), true, nodes_checked + 1);
             } else {
-                return (moves.clone(), false);
+                return (moves.clone(), false, nodes_checked + 1);
             }
         }
 
@@ -353,13 +358,14 @@ impl PocketCube {
 
             let mut new_moves = moves.clone();
             new_moves.push(i);
-            println!("trying rotation: {}", i);
             let ncube = PocketCube::rotate(cube, i);
-            let (new_moves, solved) = PocketCube::depth_limited_search(ncube, &new_moves, n - 1);
+            let (new_moves, solved, nodes_checked_r) =
+                PocketCube::depth_limited_search(ncube, &new_moves, n - 1, nodes_checked);
+            nodes_checked = nodes_checked_r;
             if solved {
-                return (new_moves.clone(), solved);
+                return (new_moves.clone(), solved, nodes_checked);
             }
         }
-        return (moves.clone(), false);
+        return (moves.clone(), false, nodes_checked);
     }
 }
