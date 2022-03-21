@@ -1,18 +1,12 @@
 mod pocket_cube;
 
-use pocket_cube as c;
+use pocket_cube::PocketCube;
 
 fn main() {
-    let solved_cube = c::PocketCube::get_solved_cube();
-    let (scrambled, moves) = c::PocketCube::scramble(solved_cube, 1);
-    println!("moves: {:?}", moves);
+    let solved_cube = PocketCube::get_solved_cube();
+    let (scrambled, moves) = PocketCube::scramble(solved_cube, 1);
+    println!("scramble moves: {:?}", moves);
 
-    let result = c::PocketCube::maybe_solve_in(scrambled, 5);
-    println!("{:?}", result);
-    // println!("trying 1");
-    // let result = c::PocketCube::maybe_solve_in(scrambled, 1);
-    // println!("{:?}", result);
-    // println!("trying 2");
-    // let result = c::PocketCube::maybe_solve_in(scrambled, 2);
-    // println!("{:?}", result);
+    let result = PocketCube::maybe_solve_in(scrambled, 5);
+    println!("maybe solve: {:?}", result);
 }
