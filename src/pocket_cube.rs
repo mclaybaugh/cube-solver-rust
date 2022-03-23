@@ -303,7 +303,7 @@ impl PocketCube {
     // TODO make this work on any type with trait of "puzzle_cube"
     pub fn scramble(&self, n: u8) -> (PocketCube, Vec<u8>) {
         let mut rotations: Vec<u8> = Vec::new();
-        let new_cube = self.clone();
+        let mut new_cube = self.clone();
         for _ in 0..n {
             let face_index = random_face_index();
             rotations.push(face_index);
