@@ -56,12 +56,7 @@ fn get_face(x: u8) -> Face {
     }
 }
 
-fn random_face() -> Face {
-    let x: u8 = rand::thread_rng().gen_range(0..6);
-    get_face(x)
-}
-
-fn rand_face_index() -> u8 {
+fn random_face_index() -> u8 {
     rand::thread_rng().gen_range(0..6)
 }
 
@@ -149,10 +144,16 @@ pub struct PocketCube {
     corners: [Corner; 8],
 }
 
+impl PartialEq for PocketCube {
+    fn eq(&self, other: &Self) -> bool {
+        return true;
+    }
+}
+
 impl PocketCube {
     // Returns a cube with white on the bottom, green on the back, and orange
     // on the left.
-    pub fn get_solved_cube() -> PocketCube {
+    pub fn new() -> PocketCube {
         return PocketCube {
             corners: [
                 Corner {
@@ -203,9 +204,9 @@ impl PocketCube {
     // face 2,0, 110 > 100 > 000 > 010 > 110 (11,10,00,01) (from bottom)
     // face 2,1, 111 > 011 > 001 > 101 > 111 (11,01,00,10) (from top)
     // 1/2 flip
-    pub fn rotate(cube: PocketCube, face_index: u8) -> PocketCube {
+    pub fn rotate(&self, face_index: u8) -> PocketCube {
         let face = get_face(face_index);
-        let mut new_cube = cube.clone();
+        let mut new_cube = self.clone();
         for piece in new_cube.corners.iter_mut() {
             if piece.position[face.axis] == face.value {
                 piece.position = PocketCube::rotate_position(piece.position, &face);
@@ -303,9 +304,9 @@ impl PocketCube {
     pub fn scramble(mut cube: PocketCube, n: u8) -> (PocketCube, Vec<u8>) {
         let mut rotations: Vec<u8> = Vec::new();
         for _ in 0..n {
-            let face_index = rand_face_index();
+            let face_index = random_face_index();
             rotations.push(face_index);
-            cube = PocketCube::rotate(cube, face_index);
+            cube = cube.rotate(face_index);
         }
         return (cube, rotations);
     }
@@ -357,7 +358,7 @@ impl PocketCube {
 
             let mut new_moves = moves.clone();
             new_moves.push(i);
-            let ncube = PocketCube::rotate(cube, i);
+            let ncube = cube.rotate(i);
             let (new_moves, solved, nodes_checked_r) =
                 PocketCube::depth_limited_search(ncube, &new_moves, n - 1, nodes_checked);
             nodes_checked = nodes_checked_r;
@@ -367,4 +368,58 @@ impl PocketCube {
         }
         return (moves.clone(), false, nodes_checked);
     }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn rotates_0_correctly() {
+        let cube = PocketCube::new();
+        let cube = cube.rotate(0);
+        let reference_cube = PocketCube {
+            corners: [
+                Corner {
+                    position: [0, 0, 0],
+                    orientation: [Color::White, Color::Green, Color::Orange],
+                },
+                Corner {
+                    position: [0, 0, 1],
+                    orientation: [Color::Yellow, Color::Green, Color::Orange],
+                },
+                Corner {
+                    position: [0, 1, 0],
+                    orientation: [Color::White, Color::Blue, Color::Orange],
+                },
+                Corner {
+                    position: [0, 1, 1],
+                    orientation: [Color::Yellow, Color::Blue, Color::Orange],
+                },
+                Corner {
+                    position: [1, 0, 0],
+                    orientation: [Color::White, Color::Green, Color::Red],
+                },
+                Corner {
+                    position: [1, 0, 1],
+                    orientation: [Color::Yellow, Color::Green, Color::Red],
+                },
+                Corner {
+                    position: [1, 1, 0],
+                    orientation: [Color::White, Color::Blue, Color::Red],
+                },
+                Corner {
+                    position: [1, 1, 1],
+                    orientation: [Color::Yellow, Color::Blue, Color::Red],
+                },
+            ],
+        };
+        assert_eq!(cube, reference_cube);
+    }
+
+    fn rotates_1_correctly() {}
+    fn rotates_2_correctly() {}
+    fn rotates_3_correctly() {}
+    fn rotates_4_correctly() {}
+    fn rotates_5_correctly() {}
 }
