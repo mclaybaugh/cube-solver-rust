@@ -262,8 +262,8 @@ impl PocketCube {
 
     // from piece at pieces[0], we know all face colors because the three
     // on the piece and all the opposites are given
-    pub fn is_solved(cube: &PocketCube) -> bool {
-        let list = face_colors_by_corner(&cube.corners[0]);
+    pub fn is_solved(&self) -> bool {
+        let list = face_colors_by_corner(&self.corners[0]);
         // for each remaining piece, ensure each side matches face
         for i in 1..6 {
             // get color/face pair, then check if in face_colors
@@ -271,23 +271,23 @@ impl PocketCube {
                 (
                     Face {
                         axis: 0,
-                        value: cube.corners[i].position[2],
+                        value: self.corners[i].position[2],
                     },
-                    cube.corners[i].orientation[0],
+                    self.corners[i].orientation[0],
                 ),
                 (
                     Face {
                         axis: 1,
-                        value: cube.corners[i].position[1],
+                        value: self.corners[i].position[1],
                     },
-                    cube.corners[i].orientation[1],
+                    self.corners[i].orientation[1],
                 ),
                 (
                     Face {
                         axis: 2,
-                        value: cube.corners[i].position[0],
+                        value: self.corners[i].position[0],
                     },
-                    cube.corners[i].orientation[2],
+                    self.corners[i].orientation[2],
                 ),
             ];
             for face_color in corner_face_colors {
@@ -301,26 +301,27 @@ impl PocketCube {
 
     // Perform n random rotations on cube and return.
     // TODO make this work on any type with trait of "puzzle_cube"
-    pub fn scramble(mut cube: PocketCube, n: u8) -> (PocketCube, Vec<u8>) {
+    pub fn scramble(&self, n: u8) -> (PocketCube, Vec<u8>) {
         let mut rotations: Vec<u8> = Vec::new();
+        let new_cube = self.clone();
         for _ in 0..n {
             let face_index = random_face_index();
             rotations.push(face_index);
-            cube = cube.rotate(face_index);
+            new_cube = new_cube.rotate(face_index);
         }
-        return (cube, rotations);
+        return (new_cube, rotations);
     }
 
     // Brute force every move and return true if one solves it.
     // iterative deepening depth-first traversal
     // needs to return breadcrumb tail on success, or false/None
-    pub fn maybe_solve_in(cube: PocketCube, n: u8) -> (Option<Vec<u8>>, u64) {
+    pub fn maybe_solve_in(&self, n: u8) -> (Option<Vec<u8>>, u64) {
         let mut depth = 0;
         let mut nodes_checked = 0;
         while depth <= n {
             let moves: Vec<u8> = Vec::new();
             let (returned_moves, is_solved, nodes_checked_r) =
-                PocketCube::depth_limited_search(cube, &moves, depth, nodes_checked);
+                PocketCube::depth_limited_search(self.clone(), &moves, depth, nodes_checked);
             nodes_checked = nodes_checked_r;
             if is_solved {
                 return (Some(returned_moves.clone()), nodes_checked);
@@ -338,7 +339,7 @@ impl PocketCube {
     ) -> (Vec<u8>, bool, u64) {
         // end of line, check if solved
         if n == 0 {
-            if PocketCube::is_solved(&cube) {
+            if cube.is_solved() {
                 return (moves.clone(), true, nodes_checked + 1);
             } else {
                 return (moves.clone(), false, nodes_checked + 1);
