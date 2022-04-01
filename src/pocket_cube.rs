@@ -11,6 +11,25 @@ enum Color {
     Green,
 }
 
+// To select the bottom face, axis would be Z (position tuple index of 2) and
+// value would be 0
+#[derive(Debug, Clone, Copy)]
+pub struct Face {
+    axis: usize,
+    value: u8,
+}
+
+#[derive(Debug, Copy, Clone, PartialEq)]
+enum RotationalDirection {
+    Clockwise,
+    CounterClockwise,
+}
+
+struct Rotation {
+    face: Face,
+    direction: RotationalDirection,
+}
+
 fn opposite_color(c: Color) -> Color {
     match c {
         Color::White => Color::Yellow,
@@ -34,30 +53,76 @@ pub struct Corner {
     orientation: [Color; 3],
 }
 
-// To select the bottom face, axis would be Z (position tuple index of 2) and
-// value would be 0
-#[derive(Debug, Clone, Copy)]
-pub struct Face {
-    axis: usize,
-    value: u8,
-}
-
-fn get_face(x: u8) -> Face {
+fn get_rotation(x: u8) -> Rotation {
     match x {
-        0 => Face { axis: 0, value: 0 },
-        1 => Face { axis: 0, value: 1 },
-        2 => Face { axis: 1, value: 0 },
-        3 => Face { axis: 1, value: 1 },
-        4 => Face { axis: 2, value: 0 },
-        5 => Face { axis: 2, value: 1 },
+        0 => Rotation {
+            face: Face { axis: 0, value: 0 },
+            direction: RotationalDirection::Clockwise,
+        },
+        1 => Rotation {
+            face: Face { axis: 0, value: 0 },
+            direction: RotationalDirection::CounterClockwise,
+        },
+        2 => Rotation {
+            face: Face { axis: 0, value: 1 },
+            direction: RotationalDirection::Clockwise,
+        },
+        3 => Rotation {
+            face: Face { axis: 0, value: 1 },
+            direction: RotationalDirection::CounterClockwise,
+        },
+        4 => Rotation {
+            face: Face { axis: 1, value: 0 },
+            direction: RotationalDirection::Clockwise,
+        },
+        5 => Rotation {
+            face: Face { axis: 1, value: 0 },
+            direction: RotationalDirection::CounterClockwise,
+        },
+        6 => Rotation {
+            face: Face { axis: 1, value: 1 },
+            direction: RotationalDirection::Clockwise,
+        },
+        7 => Rotation {
+            face: Face { axis: 1, value: 1 },
+            direction: RotationalDirection::CounterClockwise,
+        },
+        8 => Rotation {
+            face: Face { axis: 2, value: 0 },
+            direction: RotationalDirection::Clockwise,
+        },
+        9 => Rotation {
+            face: Face { axis: 2, value: 0 },
+            direction: RotationalDirection::CounterClockwise,
+        },
+        10 => Rotation {
+            face: Face { axis: 2, value: 1 },
+            direction: RotationalDirection::Clockwise,
+        },
+        11 => Rotation {
+            face: Face { axis: 2, value: 1 },
+            direction: RotationalDirection::CounterClockwise,
+        },
         _ => {
             panic!("Invalid face index: {:?}", x);
         }
     }
 }
 
-fn random_face_index() -> u8 {
-    rand::thread_rng().gen_range(0..6)
+fn is_reverse_rotation(i: u8, j: u8) -> bool {
+    match (i, j) {
+        (0, 1) | (1, 0) => true,
+        (2, 3) | (3, 2) => true,
+        (4, 5) | (5, 4) => true,
+        (6, 7) | (7, 6) => true,
+        (8, 9) | (9, 8) => true,
+        (10, 11) | (11, 10) => true,
+        _ => false,
+    }
+}
+
+fn random_rotation_index() -> u8 {
+    rand::thread_rng().gen_range(0..12)
 }
 
 // for the x/y face (0 axis), the determinant value is z (pos index 2)
@@ -144,6 +209,7 @@ pub struct PocketCube {
     corners: [Corner; 8],
 }
 
+// TODO: implement partial equality for testing cubes
 impl PartialEq for PocketCube {
     fn eq(&self, other: &Self) -> bool {
         return true;
@@ -193,7 +259,10 @@ impl PocketCube {
     }
 
     // rotations are clockwise per face
-    // face 0,0, 000 > 001 > 011 > 010 > 000 (11,10,00,01) (from left)
+    // face 0,0; 000 > 001 > 011 > 010 > 000 (11,10,00,01) (from left)
+    // counterclockwise:
+    // face 0,0; 000 > 010 > 011 > 001 > 000 (11,01,00,10)
+
     // face 0,1, 100 > 110 > 111 > 101 > 100 (11,01,00,10) (from right)
     // 0/1 flip
 
@@ -204,26 +273,41 @@ impl PocketCube {
     // face 2,0, 110 > 100 > 000 > 010 > 110 (11,10,00,01) (from bottom)
     // face 2,1, 111 > 011 > 001 > 101 > 111 (11,01,00,10) (from top)
     // 1/2 flip
-    pub fn rotate(&self, face_index: u8) -> PocketCube {
-        let face = get_face(face_index);
+    pub fn rotate(&self, rotation_index: u8) -> PocketCube {
+        let rotation = get_rotation(rotation_index);
         let mut new_cube = self.clone();
         for piece in new_cube.corners.iter_mut() {
-            if piece.position[face.axis] == face.value {
-                piece.position = PocketCube::rotate_position(piece.position, &face);
+            if piece.position[rotation.face.axis] == rotation.face.value {
+                piece.position = PocketCube::rotate_position(piece.position, &rotation);
                 piece.orientation =
-                    PocketCube::rotate_orientation(&mut piece.orientation, face.axis);
+                    PocketCube::rotate_orientation(&mut piece.orientation, rotation.face.axis);
             }
         }
         return new_cube;
     }
 
-    fn rotate_position(pos: [u8; 3], face: &Face) -> [u8; 3] {
-        let indexes: (usize, usize) = get_other_indexes(face.axis);
+    fn rotate_position(pos: [u8; 3], rotation: &Rotation) -> [u8; 3] {
+        let indexes: (usize, usize) = get_other_indexes(rotation.face.axis);
         let current_vals = (pos[indexes.0], pos[indexes.1]);
         let new_vals: (u8, u8);
-        if (face.axis == 0 && face.value == 0)
-            || (face.axis == 1 && face.value == 1)
-            || (face.axis == 2 && face.value == 0)
+        if (rotation.face.axis == 0
+            && rotation.face.value == 0
+            && rotation.direction == RotationalDirection::Clockwise)
+            || (rotation.face.axis == 0
+                && rotation.face.value == 1
+                && rotation.direction == RotationalDirection::CounterClockwise)
+            || (rotation.face.axis == 1
+                && rotation.face.value == 1
+                && rotation.direction == RotationalDirection::Clockwise)
+            || (rotation.face.axis == 1
+                && rotation.face.value == 0
+                && rotation.direction == RotationalDirection::CounterClockwise)
+            || (rotation.face.axis == 2
+                && rotation.face.value == 0
+                && rotation.direction == RotationalDirection::Clockwise)
+            || (rotation.face.axis == 2
+                && rotation.face.value == 1
+                && rotation.direction == RotationalDirection::CounterClockwise)
         {
             new_vals = match current_vals {
                 (1, 1) => (1, 0),
@@ -244,12 +328,14 @@ impl PocketCube {
         let mut new_pos = [0, 0, 0];
         new_pos[indexes.0] = new_vals.0;
         new_pos[indexes.1] = new_vals.1;
-        new_pos[face.axis] = pos[face.axis];
+        new_pos[rotation.face.axis] = pos[rotation.face.axis];
         return new_pos;
     }
 
-    // Indexes of arrays of size 3 are always 0,1,2
+    // To update orientations, the color on the same side as the axis does not
+    // change, and the other two swap.
     fn rotate_orientation(orientation: &mut [Color], axis: usize) -> [Color; 3] {
+        // Indexes of arrays of size 3 are always 0,1,2
         match axis {
             0 => orientation.swap(0, 1),
             1 => orientation.swap(0, 2),
@@ -305,9 +391,9 @@ impl PocketCube {
         let mut rotations: Vec<u8> = Vec::new();
         let mut new_cube = self.clone();
         for _ in 0..n {
-            let face_index = random_face_index();
-            rotations.push(face_index);
-            new_cube = new_cube.rotate(face_index);
+            let rotation_index = random_rotation_index();
+            rotations.push(rotation_index);
+            new_cube = new_cube.rotate(rotation_index);
         }
         return (new_cube, rotations);
     }
@@ -347,14 +433,19 @@ impl PocketCube {
         }
 
         // do check on children (rotations)
-        for i in 0..6 {
-            // don't do same move 4 times in a row
+        for i in 0..12 {
             let move_len = moves.len();
-            if move_len >= 3 {
-                if moves[move_len - 1] == i && moves[move_len - 2] == i && moves[move_len - 3] == i
-                {
-                    continue;
-                }
+            // don't reverse prior move
+            if move_len > 0 && is_reverse_rotation(moves[move_len - 1], i) {
+                continue;
+            }
+            // don't do same move 4 times in a row
+            if move_len > 3
+                && (moves[move_len - 1] == i
+                    && moves[move_len - 2] == i
+                    && moves[move_len - 3] == i)
+            {
+                continue;
             }
 
             let mut new_moves = moves.clone();
