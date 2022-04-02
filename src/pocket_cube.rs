@@ -334,16 +334,16 @@ impl PocketCube {
 
     // To update orientations, the color on the same side as the axis does not
     // change, and the other two swap.
-    fn rotate_orientation(orientation: &mut [Color], axis: usize) -> [Color; 3] {
+    fn rotate_orientation(orientation: &[Color; 3], axis: usize) -> [Color; 3] {
+        let mut n_orient = orientation.clone();
         // Indexes of arrays of size 3 are always 0,1,2
         match axis {
-            0 => orientation.swap(0, 1),
-            1 => orientation.swap(0, 2),
-            _ => orientation.swap(1, 2),
+            0 => n_orient.swap(0, 1),
+            1 => n_orient.swap(0, 2),
+            _ => n_orient.swap(1, 2),
         };
-        return orientation
-            .try_into()
-            .expect("orientation failed to convert to array");
+
+        n_orient
     }
 
     // from piece at pieces[0], we know all face colors because the three
