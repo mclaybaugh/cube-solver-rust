@@ -53,6 +53,16 @@ pub struct Corner {
     orientation: [Color; 3],
 }
 
+impl PartialEq for Corner {
+    fn eq(&self, other: &Self) -> bool {
+        if self.position != other.position || self.orientation != other.orientation {
+            return false;
+        }
+
+        return true;
+    }
+}
+
 fn get_rotation(x: u8) -> Rotation {
     match x {
         0 => Rotation {
@@ -209,9 +219,13 @@ pub struct PocketCube {
     corners: [Corner; 8],
 }
 
-// TODO: implement partial equality for testing cubes
 impl PartialEq for PocketCube {
     fn eq(&self, other: &Self) -> bool {
+        for i in 0..12 {
+            if self.corners[i] != other.corners[i] {
+                return false;
+            }
+        }
         return true;
     }
 }
