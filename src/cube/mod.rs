@@ -207,7 +207,7 @@ impl fmt::Display for Pocket {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         for (i, corner) in self.corners.iter().enumerate() {
             if i == 0 {
-                write!(f, "\n(\n");
+                write!(f, "\n(\n").unwrap();
             }
             write!(
                 f,
@@ -218,11 +218,12 @@ impl fmt::Display for Pocket {
                 corner.orientation[0].to_num(),
                 corner.orientation[1].to_num(),
                 corner.orientation[2].to_num()
-            );
+            )
+            .unwrap();
             if i == 7 {
-                write!(f, "\n)\n");
+                write!(f, "\n)\n").unwrap();
             } else {
-                write!(f, "\n");
+                write!(f, "\n").unwrap();
             }
         }
         Ok(())

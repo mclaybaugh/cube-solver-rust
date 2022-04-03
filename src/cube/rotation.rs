@@ -26,51 +26,51 @@ pub enum Rotation {
 impl Rotation {
     pub fn details(&self) -> RotationDetails {
         match self {
-            L => RotationDetails {
+            Rotation::L => RotationDetails {
                 face: Face { axis: 0, value: 0 },
                 direction: Rdir::Clockwise,
             },
-            Lc => RotationDetails {
+            Rotation::Lc => RotationDetails {
                 face: Face { axis: 0, value: 0 },
                 direction: Rdir::CounterClockwise,
             },
-            R => RotationDetails {
+            Rotation::R => RotationDetails {
                 face: Face { axis: 0, value: 1 },
                 direction: Rdir::Clockwise,
             },
-            Rc => RotationDetails {
+            Rotation::Rc => RotationDetails {
                 face: Face { axis: 0, value: 1 },
                 direction: Rdir::CounterClockwise,
             },
-            Ba => RotationDetails {
+            Rotation::Ba => RotationDetails {
                 face: Face { axis: 1, value: 0 },
                 direction: Rdir::Clockwise,
             },
-            Bac => RotationDetails {
+            Rotation::Bac => RotationDetails {
                 face: Face { axis: 1, value: 0 },
                 direction: Rdir::CounterClockwise,
             },
-            F => RotationDetails {
+            Rotation::F => RotationDetails {
                 face: Face { axis: 1, value: 1 },
                 direction: Rdir::Clockwise,
             },
-            Fc => RotationDetails {
+            Rotation::Fc => RotationDetails {
                 face: Face { axis: 1, value: 1 },
                 direction: Rdir::CounterClockwise,
             },
-            Bo => RotationDetails {
+            Rotation::Bo => RotationDetails {
                 face: Face { axis: 2, value: 0 },
                 direction: Rdir::Clockwise,
             },
-            Boc => RotationDetails {
+            Rotation::Boc => RotationDetails {
                 face: Face { axis: 2, value: 0 },
                 direction: Rdir::CounterClockwise,
             },
-            T => RotationDetails {
+            Rotation::T => RotationDetails {
                 face: Face { axis: 2, value: 1 },
                 direction: Rdir::Clockwise,
             },
-            Tc => RotationDetails {
+            Rotation::Tc => RotationDetails {
                 face: Face { axis: 2, value: 1 },
                 direction: Rdir::CounterClockwise,
             },
