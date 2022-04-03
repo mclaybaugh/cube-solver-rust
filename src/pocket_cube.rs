@@ -1,4 +1,5 @@
 use rand::Rng;
+use std::fmt;
 
 // initial Cube stuff
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -9,6 +10,33 @@ enum Color {
     Orange,
     Blue,
     Green,
+}
+
+impl Color {
+    fn to_num(&self) -> u8 {
+        match self {
+            Color::White => 0,
+            Color::Yellow => 1,
+            Color::Red => 2,
+            Color::Orange => 3,
+            Color::Blue => 4,
+            Color::Green => 5,
+        }
+    }
+
+    fn from_num(x: u8) -> Color {
+        match x {
+            0 => Color::White,
+            1 => Color::Yellow,
+            2 => Color::Red,
+            3 => Color::Orange,
+            4 => Color::Blue,
+            5 => Color::Green,
+            _ => {
+                panic!("Invalid color num: {}", x)
+            }
+        }
+    }
 }
 
 // To select the bottom face, axis would be Z (position tuple index of 2) and
@@ -60,6 +88,17 @@ impl PartialEq for Corner {
         }
 
         return true;
+    }
+}
+
+fn corner_from_array(xs: [u8; 6]) -> Corner {
+    Corner {
+        position: [xs[0], xs[1], xs[2]],
+        orientation: [
+            Color::from_num(xs[3]),
+            Color::from_num(xs[4]),
+            Color::from_num(xs[5]),
+        ],
     }
 }
 
@@ -219,9 +258,35 @@ pub struct PocketCube {
     corners: [Corner; 8],
 }
 
+impl fmt::Display for PocketCube {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        for (i, corner) in self.corners.iter().enumerate() {
+            if i == 0 {
+                write!(f, "\n(\n");
+            }
+            write!(
+                f,
+                "{} {} {} {} {} {}",
+                corner.position[0],
+                corner.position[1],
+                corner.position[2],
+                corner.orientation[0].to_num(),
+                corner.orientation[1].to_num(),
+                corner.orientation[2].to_num()
+            );
+            if i == 7 {
+                write!(f, "\n)\n");
+            } else {
+                write!(f, "\n");
+            }
+        }
+        Ok(())
+    }
+}
+
 impl PartialEq for PocketCube {
     fn eq(&self, other: &Self) -> bool {
-        for i in 0..12 {
+        for i in 0..8 {
             if self.corners[i] != other.corners[i] {
                 return false;
             }
@@ -231,45 +296,51 @@ impl PartialEq for PocketCube {
 }
 
 impl PocketCube {
+    fn to_array(&self) -> [[u8; 6]; 8] {
+        let mut a: [[u8; 6]; 8] = [[0; 6]; 8];
+        for (i, corner) in self.corners.iter().enumerate() {
+            a[i] = [
+                corner.position[0],
+                corner.position[1],
+                corner.position[2],
+                corner.orientation[0].to_num(),
+                corner.orientation[1].to_num(),
+                corner.orientation[2].to_num(),
+            ];
+        }
+
+        a
+    }
+
+    fn from_array(xs: [[u8; 6]; 8]) -> PocketCube {
+        PocketCube {
+            corners: [
+                corner_from_array(xs[0]),
+                corner_from_array(xs[1]),
+                corner_from_array(xs[2]),
+                corner_from_array(xs[3]),
+                corner_from_array(xs[4]),
+                corner_from_array(xs[5]),
+                corner_from_array(xs[6]),
+                corner_from_array(xs[7]),
+            ],
+        }
+    }
+
     // Returns a cube with white on the bottom, green on the back, and orange
     // on the left.
+    // w0, y1, r2, o3, b4, g5
     pub fn new() -> PocketCube {
-        return PocketCube {
-            corners: [
-                Corner {
-                    position: [0, 0, 0],
-                    orientation: [Color::White, Color::Green, Color::Orange],
-                },
-                Corner {
-                    position: [0, 0, 1],
-                    orientation: [Color::Yellow, Color::Green, Color::Orange],
-                },
-                Corner {
-                    position: [0, 1, 0],
-                    orientation: [Color::White, Color::Blue, Color::Orange],
-                },
-                Corner {
-                    position: [0, 1, 1],
-                    orientation: [Color::Yellow, Color::Blue, Color::Orange],
-                },
-                Corner {
-                    position: [1, 0, 0],
-                    orientation: [Color::White, Color::Green, Color::Red],
-                },
-                Corner {
-                    position: [1, 0, 1],
-                    orientation: [Color::Yellow, Color::Green, Color::Red],
-                },
-                Corner {
-                    position: [1, 1, 0],
-                    orientation: [Color::White, Color::Blue, Color::Red],
-                },
-                Corner {
-                    position: [1, 1, 1],
-                    orientation: [Color::Yellow, Color::Blue, Color::Red],
-                },
-            ],
-        };
+        PocketCube::from_array([
+            [0, 0, 0, 0, 5, 3],
+            [0, 0, 1, 1, 5, 3],
+            [0, 1, 0, 0, 4, 3],
+            [0, 1, 1, 1, 4, 3],
+            [1, 0, 0, 0, 5, 2],
+            [1, 0, 1, 1, 5, 2],
+            [1, 1, 0, 0, 4, 2],
+            [1, 1, 1, 1, 4, 2],
+        ])
     }
 
     // rotations are clockwise per face
@@ -481,46 +552,19 @@ mod test {
     use super::*;
 
     #[test]
-    fn rotates_0_correctly() {
-        let cube = PocketCube::new();
-        let cube = cube.rotate(0);
-        let reference_cube = PocketCube {
-            corners: [
-                Corner {
-                    position: [0, 0, 0],
-                    orientation: [Color::White, Color::Green, Color::Orange],
-                },
-                Corner {
-                    position: [0, 0, 1],
-                    orientation: [Color::Yellow, Color::Green, Color::Orange],
-                },
-                Corner {
-                    position: [0, 1, 0],
-                    orientation: [Color::White, Color::Blue, Color::Orange],
-                },
-                Corner {
-                    position: [0, 1, 1],
-                    orientation: [Color::Yellow, Color::Blue, Color::Orange],
-                },
-                Corner {
-                    position: [1, 0, 0],
-                    orientation: [Color::White, Color::Green, Color::Red],
-                },
-                Corner {
-                    position: [1, 0, 1],
-                    orientation: [Color::Yellow, Color::Green, Color::Red],
-                },
-                Corner {
-                    position: [1, 1, 0],
-                    orientation: [Color::White, Color::Blue, Color::Red],
-                },
-                Corner {
-                    position: [1, 1, 1],
-                    orientation: [Color::Yellow, Color::Blue, Color::Red],
-                },
-            ],
-        };
-        assert_eq!(cube, reference_cube);
+    fn rotates_left_clockwise_correctly() {
+        let cube = PocketCube::new().rotate(0);
+        let ref_cube = PocketCube::from_array([
+            [0, 0, 1, 5, 0, 3],
+            [0, 1, 1, 5, 1, 3],
+            [0, 0, 0, 4, 0, 3],
+            [0, 1, 0, 4, 1, 3],
+            [1, 0, 0, 0, 5, 2],
+            [1, 0, 1, 1, 5, 2],
+            [1, 1, 0, 0, 4, 2],
+            [1, 1, 1, 1, 4, 2],
+        ]);
+        assert_eq!(cube, ref_cube, "cube: {}, ref: {}", cube, ref_cube);
     }
 
     fn rotates_1_correctly() {}
