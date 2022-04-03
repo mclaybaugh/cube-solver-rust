@@ -1,6 +1,6 @@
 // initial Cube stuff
 #[derive(Debug, Copy, Clone, PartialEq)]
-enum Color {
+pub enum Color {
     White,
     Yellow,
     Red,

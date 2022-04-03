@@ -1,13 +1,12 @@
 mod cube;
 
-use cube::pocket::PocketCube;
+use cube::*;
 
 fn main() {
     let solved_cube = PocketCube::new();
-    println!("cube: {}", solved_cube);
-    // let (scrambled, moves) = solved_cube.scramble(1);
-    // println!("scramble moves: {:?}", moves);
+    let (scrambled, moves) = scramble(&solved_cube, 1);
+    println!("scramble moves: {:?}", moves);
 
-    // let result = scrambled.maybe_solve_in(5);
-    // println!("maybe solve: {:?}", result);
+    let result = maybe_solve_in(&scrambled, 1);
+    println!("maybe solve: {:?}", result);
 }
