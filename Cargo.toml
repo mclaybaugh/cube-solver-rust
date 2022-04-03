@@ -1,5 +1,5 @@
 [package]
-name = "cube-solver-rust"
+name = "cube_solver"
 version = "0.1.0"
 authors = ["Michael <michael.claybaugh@gmail.com>"]
 edition = "2021"

@@ -1,6 +1,6 @@
-mod cube_pocket;
+mod cube;
 
-use cube_pocket::PocketCube;
+use cube::pocket::PocketCube;
 
 fn main() {
     let solved_cube = PocketCube::new();
