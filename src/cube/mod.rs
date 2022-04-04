@@ -29,7 +29,8 @@ pub fn scramble<T: Cube + Clone>(cube: &T, n: u8) -> (T, Vec<Rotation>) {
 // Brute force every move and return true if one solves it.
 // iterative deepening depth-first traversal
 // needs to return breadcrumb tail on success, or false/None
-pub fn maybe_solve_in<T: Cube + Clone>(cube: &T, n: u8) -> (Option<Vec<Rotation>>, u64) {
+pub fn brute_force<T: Cube + Clone>(cube: &T, n: u8) -> (Option<Vec<Rotation>>, u64) {
+    println!("max depth: {}", n);
     let mut depth = 0;
     let mut nodes_checked = 0;
     while depth <= n {
@@ -40,7 +41,7 @@ pub fn maybe_solve_in<T: Cube + Clone>(cube: &T, n: u8) -> (Option<Vec<Rotation>
         if is_solved {
             return (Some(returned_moves.clone()), nodes_checked);
         }
-        depth = depth + 1;
+        depth += 1;
     }
     return (None, nodes_checked);
 }
@@ -53,15 +54,19 @@ fn depth_limited_search<T: Cube + Clone>(
 ) -> (Vec<Rotation>, bool, u64) {
     // end of line, check if solved
     if n == 0 {
+        nodes_checked += 1;
         if cube.is_solved() {
-            return (moves.clone(), true, nodes_checked + 1);
+            println!("got it!");
+            return (moves.clone(), true, nodes_checked);
         } else {
-            return (moves.clone(), false, nodes_checked + 1);
+            println!("nope");
+            return (moves.clone(), false, nodes_checked);
         }
     }
 
     // do check on children (rotations)
-    for r in Rotation::array() {
+    for r in Rotation::pocket_array() {
+        println!("trying {:?}, {}", r, n);
         let move_len = moves.len();
         // don't reverse prior move
         if move_len > 0 && r.is_reverse(moves[move_len - 1]) {
@@ -424,31 +429,67 @@ mod test {
     use super::*;
 
     #[test]
-    fn rotates_left_clockwise() {
-        let cube = Pocket::new().rotate(Rotation::L);
-        let ref_cube = Pocket::from_array([
-            [0, 0, 1, 5, 0, 3],
-            [0, 1, 1, 5, 1, 3],
-            [0, 0, 0, 4, 0, 3],
-            [0, 1, 0, 4, 1, 3],
-            [1, 0, 0, 0, 5, 2],
-            [1, 0, 1, 1, 5, 2],
-            [1, 1, 0, 0, 4, 2],
-            [1, 1, 1, 1, 4, 2],
-        ]);
+    fn pocket_rotations_correct() {
+        check_rotation(
+            Rotation::L,
+            [
+                [0, 0, 1, 5, 0, 3],
+                [0, 1, 1, 5, 1, 3],
+                [0, 0, 0, 4, 0, 3],
+                [0, 1, 0, 4, 1, 3],
+                [1, 0, 0, 0, 5, 2],
+                [1, 0, 1, 1, 5, 2],
+                [1, 1, 0, 0, 4, 2],
+                [1, 1, 1, 1, 4, 2],
+            ],
+        );
+        check_rotation(
+            Rotation::Lc,
+            [
+                [0, 1, 0, 5, 0, 3],
+                [0, 0, 0, 5, 1, 3],
+                [0, 1, 1, 4, 0, 3],
+                [0, 0, 1, 4, 1, 3],
+                [1, 0, 0, 0, 5, 2],
+                [1, 0, 1, 1, 5, 2],
+                [1, 1, 0, 0, 4, 2],
+                [1, 1, 1, 1, 4, 2],
+            ],
+        );
+        check_rotation(
+            Rotation::R,
+            [
+                [0, 0, 0, 0, 5, 3],
+                [0, 0, 1, 1, 5, 3],
+                [0, 1, 0, 0, 4, 3],
+                [0, 1, 1, 1, 4, 3],
+                [1, 1, 0, 5, 0, 2],
+                [1, 0, 0, 5, 1, 2],
+                [1, 1, 1, 4, 0, 2],
+                [1, 0, 1, 4, 1, 2],
+            ],
+        );
+    }
+
+    fn check_rotation(r: Rotation, a: [[u8; 6]; 8]) -> () {
+        let cube = Pocket::new().rotate(r);
+        let ref_cube = Pocket::from_array(a);
         assert_eq!(cube, ref_cube, "cube: {}, ref: {}", cube, ref_cube)
     }
 
     #[test]
-    fn brute_force_single_rotation() {
-        for r in Rotation::array() {
-            check_brute_force(r);
-        }
+    fn pocket_brute_force_single_rotation() {
+        // This works great at testing multiple, but I know that Bo rotation
+        // is causing problems so just running that until I figure it out
+        // for r in Rotation::pocket_array() {
+        //     check_brute_force(r);
+        // }
+        check_brute_force(Rotation::Bo);
     }
 
     fn check_brute_force(r: Rotation) -> () {
         let cube = Pocket::new().rotate(r);
-        let (moves, c) = maybe_solve_in(&cube, 1);
+        let (moves, c) = brute_force(&cube, 1);
         assert_eq!(
             moves,
             Some(vec!(r.reverse())),

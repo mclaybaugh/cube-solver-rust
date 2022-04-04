@@ -1,6 +1,6 @@
 mod cube;
 
-use cube::maybe_solve_in;
+use cube::brute_force;
 use cube::scramble;
 use cube::Pocket;
 
@@ -9,6 +9,6 @@ fn main() {
     let (scrambled, moves) = scramble(&solved_cube, 1);
     println!("scramble moves: {:?}", moves);
 
-    let result = maybe_solve_in(&scrambled, 1);
+    let result = brute_force(&scrambled, 1);
     println!("maybe solve: {:?}", result);
 }

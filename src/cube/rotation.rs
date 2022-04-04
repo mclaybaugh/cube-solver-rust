@@ -119,6 +119,21 @@ impl Rotation {
         ]
     }
 
+    // on a pocket cube, more reverses
+    // R is same as L
+    // T is same as Bo
+    // F is same as Ba
+    pub fn pocket_array() -> [Rotation; 6] {
+        [
+            Rotation::L,
+            Rotation::Lc,
+            Rotation::Ba,
+            Rotation::Bac,
+            Rotation::Bo,
+            Rotation::Boc,
+        ]
+    }
+
     pub fn is_reverse(&self, other: Rotation) -> bool {
         if self.reverse() == other {
             return true;
