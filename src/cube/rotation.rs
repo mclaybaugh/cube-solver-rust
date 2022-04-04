@@ -120,14 +120,27 @@ impl Rotation {
     }
 
     pub fn is_reverse(&self, other: Rotation) -> bool {
-        match (self, other) {
-            (Rotation::L, Rotation::Lc) | (Rotation::Lc, Rotation::L) => true,
-            (Rotation::R, Rotation::Rc) | (Rotation::Rc, Rotation::R) => true,
-            (Rotation::Ba, Rotation::Bac) | (Rotation::Bac, Rotation::Ba) => true,
-            (Rotation::F, Rotation::Fc) | (Rotation::Fc, Rotation::F) => true,
-            (Rotation::Bo, Rotation::Boc) | (Rotation::Boc, Rotation::Bo) => true,
-            (Rotation::T, Rotation::Tc) | (Rotation::Tc, Rotation::T) => true,
-            _ => false,
+        if self.reverse() == other {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    pub fn reverse(&self) -> Rotation {
+        match self {
+            Rotation::L => Rotation::Lc,
+            Rotation::Lc => Rotation::L,
+            Rotation::R => Rotation::Rc,
+            Rotation::Rc => Rotation::R,
+            Rotation::Ba => Rotation::Bac,
+            Rotation::Bac => Rotation::Ba,
+            Rotation::F => Rotation::Fc,
+            Rotation::Fc => Rotation::F,
+            Rotation::Bo => Rotation::Boc,
+            Rotation::Boc => Rotation::Bo,
+            Rotation::T => Rotation::Tc,
+            Rotation::Tc => Rotation::T,
         }
     }
 }

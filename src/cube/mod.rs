@@ -424,7 +424,7 @@ mod test {
     use super::*;
 
     #[test]
-    fn rotates_left_clockwise_correctly() {
+    fn rotates_left_clockwise() {
         let cube = Pocket::new().rotate(Rotation::L);
         let ref_cube = Pocket::from_array([
             [0, 0, 1, 5, 0, 3],
@@ -436,12 +436,26 @@ mod test {
             [1, 1, 0, 0, 4, 2],
             [1, 1, 1, 1, 4, 2],
         ]);
-        assert_eq!(cube, ref_cube, "cube: {}, ref: {}", cube, ref_cube);
+        assert_eq!(cube, ref_cube, "cube: {}, ref: {}", cube, ref_cube)
     }
 
-    fn rotates_1_correctly() {}
-    fn rotates_2_correctly() {}
-    fn rotates_3_correctly() {}
-    fn rotates_4_correctly() {}
-    fn rotates_5_correctly() {}
+    #[test]
+    fn brute_force_single_rotation() {
+        for r in Rotation::array() {
+            check_brute_force(r);
+        }
+    }
+
+    fn check_brute_force(r: Rotation) -> () {
+        let cube = Pocket::new().rotate(r);
+        let (moves, c) = maybe_solve_in(&cube, 1);
+        assert_eq!(
+            moves,
+            Some(vec!(r.reverse())),
+            "r: {:?}, moves: {:?}, count: {}",
+            r,
+            moves,
+            c
+        )
+    }
 }
