@@ -469,6 +469,19 @@ mod test {
                 [1, 0, 1, 4, 1, 2],
             ],
         );
+        check_rotation(
+            Rotation::Bo,
+            [
+                [0, 1, 0, 0, 3, 5],
+                [0, 0, 1, 1, 5, 3],
+                [1, 1, 0, 0, 3, 4],
+                [0, 1, 1, 1, 4, 3],
+                [0, 0, 0, 0, 2, 5],
+                [1, 0, 1, 1, 5, 2],
+                [1, 0, 0, 0, 2, 4],
+                [1, 1, 1, 1, 4, 2],
+            ],
+        );
     }
 
     fn check_rotation(r: Rotation, a: [[u8; 6]; 8]) -> () {
@@ -479,12 +492,9 @@ mod test {
 
     #[test]
     fn pocket_brute_force_single_rotation() {
-        // This works great at testing multiple, but I know that Bo rotation
-        // is causing problems so just running that until I figure it out
-        // for r in Rotation::pocket_array() {
-        //     check_brute_force(r);
-        // }
-        check_brute_force(Rotation::Bo);
+        for r in Rotation::pocket_array() {
+            check_brute_force(r);
+        }
     }
 
     fn check_brute_force(r: Rotation) -> () {
