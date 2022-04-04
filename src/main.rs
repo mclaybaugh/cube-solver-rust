@@ -6,9 +6,9 @@ use cube::Pocket;
 
 fn main() {
     let solved_cube = Pocket::new();
-    let (scrambled, moves) = scramble(&solved_cube, 1);
-    println!("scramble moves: {:?}", moves);
+    let (scrambled, moves) = scramble(&solved_cube, 10);
+    println!("scramble: {:?}", moves);
 
-    let result = brute_force(&scrambled, 1);
-    println!("maybe solve: {:?}", result);
+    let result = brute_force(&scrambled, 6);
+    println!("solution: {:?}", result);
 }

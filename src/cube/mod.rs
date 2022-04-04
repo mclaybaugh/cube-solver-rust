@@ -30,7 +30,7 @@ pub fn scramble<T: Cube + Clone>(cube: &T, n: u8) -> (T, Vec<Rotation>) {
 // iterative deepening depth-first traversal
 // needs to return breadcrumb tail on success, or false/None
 pub fn brute_force<T: Cube + Clone>(cube: &T, n: u8) -> (Option<Vec<Rotation>>, u64) {
-    println!("max depth: {}", n);
+    // println!("max depth: {}", n);
     let mut depth = 0;
     let mut nodes_checked = 0;
     while depth <= n {
@@ -56,17 +56,15 @@ fn depth_limited_search<T: Cube + Clone>(
     if n == 0 {
         nodes_checked += 1;
         if cube.is_solved() {
-            println!("got it!");
             return (moves.clone(), true, nodes_checked);
         } else {
-            println!("nope");
             return (moves.clone(), false, nodes_checked);
         }
     }
 
     // do check on children (rotations)
     for r in Rotation::pocket_array() {
-        println!("trying {:?}, {}", r, n);
+        // println!("trying {:?}, {}", r, n);
         let move_len = moves.len();
         // don't reverse prior move
         if move_len > 0 && r.is_reverse(moves[move_len - 1]) {
@@ -129,7 +127,10 @@ fn get_other_indexes(i: usize) -> (usize, usize) {
     match i {
         0 => (1, 2),
         1 => (0, 2),
-        _ => (1, 2),
+        2 => (0, 1),
+        _ => {
+            panic!("get_other_indexes invalid index: {}", i);
+        }
     }
 }
 
@@ -322,7 +323,9 @@ impl Pocket {
                 (1, 0) => (0, 0),
                 (0, 0) => (0, 1),
                 (0, 1) => (1, 1),
-                _ => (1, 1),
+                _ => {
+                    panic!("rotate position match failed: {:?}", current_vals);
+                }
             };
         } else {
             new_vals = match current_vals {
@@ -330,13 +333,16 @@ impl Pocket {
                 (0, 1) => (0, 0),
                 (0, 0) => (1, 0),
                 (1, 0) => (1, 1),
-                _ => (1, 1),
+                _ => {
+                    panic!("rotate position match failed: {:?}", current_vals);
+                }
             };
         }
-        let mut new_pos = [0, 0, 0];
+        let mut new_pos = [0; 3];
         new_pos[indexes.0] = new_vals.0;
         new_pos[indexes.1] = new_vals.1;
         new_pos[rotation.face.axis] = pos[rotation.face.axis];
+        // println!("pos: {:?}, new: {:?}, indexes: {:?}", pos, new_pos, indexes);
         return new_pos;
     }
 
